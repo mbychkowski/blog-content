@@ -12,8 +12,8 @@ description: "Create a blog and deploy with S3"
 * Kubectl
 * Control Plane (only for master node)
 
-* __Docker__ - Container runtime. Runs containers on each node. [Docs](https://docs.docker.com/install/linux/docker-ce/ubuntu/). To use docker with `kubeadm` need to install specific version of docker. `kubeadm` goes through vetting process that does not always allow latest and greatest version of docker to be used `sudo apt-get install -y docker-ce=18.06.1~ce~3-0~ubuntu`. To prevent an auto update on docker run: `sudo apt-mark hold docker-ce`
-* __Kubernetes (`kubeadm`, `kubelet`, `kubectl`)__ - [Docs](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl). `Kubeadm` automates a large portion of the effort for standing up a kubernetes cluster. `Kubelet` essential piece. Needs to be installed. An agent that serves as a middleman between containers and kubernetes. `Kubectl` is a command line tool on how we can interact with a cluster. To install these 3 items it is best to use the current versions `sudo apt-get install -y kubelet=1.12.7-00 kubeadm=1.12.7-00 kubectl=1.12.7-00`, and hold version `sudo apt-mark hold kubelet kubeadm kubectl`
+* __Docker__ - Container runtime. Runs containers on each node. [Docs](https://docs.docker.com/install/linux/docker-ce/ubuntu/). Go through the docs up to the point of installing `docker-ce`. To use docker with `kubeadm` need to install specific version of docker. `kubeadm` goes through vetting process that does not always allow latest and greatest version of docker to be used `sudo apt-get install -y docker-ce=18.06.1~ce~3-0~ubuntu`. To prevent an auto update on docker run: `sudo apt-mark hold docker-ce`
+* __Kubernetes__ (`kubeadm`, `kubelet`, `kubectl`)__ - [Docs](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl). `Kubeadm` automates a large portion of the effort for standing up a kubernetes cluster. `Kubelet` essential piece. Needs to be installed. An agent that serves as a middleman between containers and kubernetes. `Kubectl` is a command line tool on how we can interact with a cluster. To install these 3 items it is best to use the current versions `sudo apt-get install -y kubelet=1.12.7-00 kubeadm=1.12.7-00 kubectl=1.12.7-00`, and hold version `sudo apt-mark hold kubelet kubeadm kubectl`. These will need to be installed on all machines working with Kubernetes.
 
 ## Bootstrapping a cluster
 1. Initialize a cluster with cidr commnad on __master__ node: `sudo kubeadm init --pod-network-cidr=10.244.0.0/16`.
@@ -35,6 +35,32 @@ After this step our kubernetes master node should be up and running.
 
 Afterwards the status state should be "Ready".
 
-# Terminolog
+## Terminolog
 __Pod__ smallest entity in Kubernetes. Typically you will have 1 container per pod, but can have more than 1. In order for a container to be connected to cluster it must be in a pod. Kubernetes schedules Pods to run on Nodes.
 __Nodes__ are the servers that are actually running the containers. The control server (master node?) hosts the Kubernetes API. The worker nodes are what is actually running the applications.
+
+## API Primitives
+
+### YAML specification file
+Depending on the 'kind' this could be deployment, pod, job, DaemonSet, ReplicaSet, ReplicationController, and more...
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.7.9
+        ports:
+        - containerPort: 80
+```
